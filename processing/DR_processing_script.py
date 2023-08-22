@@ -45,18 +45,18 @@ def process_ephys_sessions(mainPath, mouseID, exp_num, session_date, metadata_on
     ephysPath = glob.glob(os.path.join(mainPath,'Record Node*','experiment*','recording*','continuous','*-AP'))
     nidaqPath = glob.glob(os.path.join(mainPath,'Record Node*','experiment*','recording*','continuous','NI-DAQmx*'))
     if len(ephysPath)==0:
-        ephysPath = glob.glob(os.path.join(mm,'*_'+mouseID+'*','Record Node*','experiment*','recording*','continuous','*-AP'))#[0]
-        nidaqPath = glob.glob(os.path.join(mm,'*_'+mouseID+'*','Record Node*','experiment*','recording*','continuous','NI-DAQmx*'))
+        ephysPath = glob.glob(os.path.join(mainPath,'*_'+mouseID+'*','Record Node*','experiment*','recording*','continuous','*-AP'))#[0]
+        nidaqPath = glob.glob(os.path.join(mainPath,'*_'+mouseID+'*','Record Node*','experiment*','recording*','continuous','NI-DAQmx*'))
     
     
-    kilosortPath = glob.glob(os.path.join(datajointPath,'*'+mouseID+'_'+session_date,'*probe*_sorted','continuous','Neuropix-PXI-100.0'))
-    if len(kilosortPath)>0:
-        if not os.path.isfile(os.path.join(kilosortPath[0],'spike_clusters.npy')):
-            kilosortPath = glob.glob(os.path.join(mainPath,'Record Node*','experiment*','recording*','continuous','*-AP'))
-    else:
-        kilosortPath = glob.glob(os.path.join(mainPath,'Record Node*','experiment*','recording*','continuous','*-AP'))
+    # kilosortPath = glob.glob(os.path.join(datajointPath,'*'+mouseID+'_'+session_date,'*probe*_sorted','continuous','Neuropix-PXI-100.0'))
+    # if len(kilosortPath)>0:
+    #     if not os.path.isfile(os.path.join(kilosortPath[0],'spike_clusters.npy')):
+    #         kilosortPath = glob.glob(os.path.join(mainPath,'Record Node*','experiment*','recording*','continuous','*-AP'))
     # else:
-    #     kilosortPath = glob.glob(os.path.join(datajointPath,'*'+mouseID+'_'+session_date,'*probe*_sorted','continuous','Neuropix-PXI-100.0'))
+    #     kilosortPath = glob.glob(os.path.join(mainPath,'Record Node*','experiment*','recording*','continuous','*-AP'))
+    # # else:
+    # #     kilosortPath = glob.glob(os.path.join(datajointPath,'*'+mouseID+'_'+session_date,'*probe*_sorted','continuous','Neuropix-PXI-100.0'))
     
     syncPath = glob.glob(os.path.join(mainPath, '*.h5'))[0] #assumes that sync file is the only .h5!
     processedDataPath = os.path.join(mainPath,'processed')
@@ -83,7 +83,7 @@ def process_ephys_sessions(mainPath, mouseID, exp_num, session_date, metadata_on
     metadata['behavPath']=behavPath
     metadata['rfPath']=rfPath
     metadata['ephysPath']=ephysPath
-    metadata['kilosortPath']=kilosortPath
+    # metadata['kilosortPath']=kilosortPath
     metadata['datajointPath']=datajointPath
     metadata['nidaqPath']=nidaqPath
     metadata['syncPath']=syncPath
@@ -99,8 +99,8 @@ def process_ephys_sessions(mainPath, mouseID, exp_num, session_date, metadata_on
     trials_df, frames_df = align_trial_times(trials_df, syncData, syncPath, nidaqPath, trialSoundArray, 
                                              trialSoundDur, soundSampleRate, deltaWheelPos, RF_first)
     
-    unitData_df, spike_times, mean_waveforms = align_spike_times(ephysPath, syncData, probeNames, probeDirNames, 
-                                                                  kilosortPath, startTime, mouseID, exp_num)
+    # unitData_df, spike_times, mean_waveforms = align_spike_times(ephysPath, syncData, probeNames, probeDirNames, 
+    #                                                               kilosortPath, startTime, mouseID, exp_num)
     
     lick_times = load_lick_times(syncPath)
             
@@ -116,11 +116,11 @@ def process_ephys_sessions(mainPath, mouseID, exp_num, session_date, metadata_on
       
 
     ##Save individual files for each type of data
-    np.save(os.path.join(processedDataPath,'spike_times_aligned.npy'),spike_times,allow_pickle=True)
-    np.save(os.path.join(processedDataPath,'mean_waveforms.npy'),mean_waveforms,allow_pickle=True)
+    # np.save(os.path.join(processedDataPath,'spike_times_aligned.npy'),spike_times,allow_pickle=True)
+    # np.save(os.path.join(processedDataPath,'mean_waveforms.npy'),mean_waveforms,allow_pickle=True)
     np.save(os.path.join(processedDataPath,'lick_times.npy'),lick_times,allow_pickle=True)
     
-    unitData_df.to_csv(os.path.join(processedDataPath,'unit_table.csv'))
+    # unitData_df.to_csv(os.path.join(processedDataPath,'unit_table.csv'))
     trials_df.to_csv(os.path.join(processedDataPath,'trials_table.csv'))
     frames_df.to_csv(os.path.join(processedDataPath,'frames_table.csv'))
     
@@ -128,7 +128,7 @@ def process_ephys_sessions(mainPath, mouseID, exp_num, session_date, metadata_on
 # %% run loop on experiment folders
 
 #option to process and save metadata only
-metadata_only=True
+metadata_only=False
 
 mainPaths = [
     #sound pilot
@@ -145,46 +145,60 @@ mainPaths = [
     # #templeton pilot
     r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2022-07-26_14-09-36_620263",
     r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2022-07-27_13-57-17_620263",
-    r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2022-08-02_15-40-19_620264",
-    r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2022-09-19_13-48-26_628801",
-    r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2022-09-26_12-48-09_636397",
-    r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2022-09-27_11-37-08_636397",
-    r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2022-12-05_13-08-02_644547",
-    r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2022-12-06_12-35-35_644547",
-    r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2023-01-17_11-39-17_646318",
-    r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2023-01-18_10-44-55_646318",
-    r"Y:\2023-02-27_08-14-30_649944",
-    r"Y:\2023-02-28_09-33-43_649944",
+    # r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2022-08-02_15-40-19_620264",
+    # r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2022-09-19_13-48-26_628801",
+    # r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2022-09-26_12-48-09_636397",
+    # r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2022-09-27_11-37-08_636397",
+    # r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2022-12-05_13-08-02_644547",
+    # r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2022-12-06_12-35-35_644547",
+    # r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2023-01-17_11-39-17_646318",
+    # r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2023-01-18_10-44-55_646318",
+    # r"Y:\2023-02-27_08-14-30_649944",
+    # r"Y:\2023-02-28_09-33-43_649944",
+    # recent pilot
+    r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2023-07-11_10-07-43_668759",
+    r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2023-07-12_10-50-07_668759",
+    r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2023-07-13_09-35-31_668759",
+    r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2023-07-18_10-05-51_670181",
+    r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2023-07-20_12-21-41_670181",
+    r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2023-07-25_09-47-29_670180",
+    r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2023-07-26_09-55-57_670180",
+    r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2023-07-27_09-36-37_670180",
+    r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2023-08-01_09-28-08_670248",
+    r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2023-08-02_09-58-44_670248",
+    r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2023-08-03_09-39-59_670248",
     
-    #DR pilot
-    r"\\allen\programs\mindscope\workgroups\dynamicrouting\PilotEphys\Task 2 pilot\DRpilot_626791_20220815", #re-run with new datajoint output
-    r"\\allen\programs\mindscope\workgroups\dynamicrouting\PilotEphys\Task 2 pilot\DRpilot_626791_20220816", #re-run with new datajoint output
-    r"\\allen\programs\mindscope\workgroups\dynamicrouting\PilotEphys\Task 2 pilot\DRpilot_626791_20220817", #re-run with new datajoint output
+    # #DR pilot
+    # r"\\allen\programs\mindscope\workgroups\dynamicrouting\PilotEphys\Task 2 pilot\DRpilot_626791_20220815", #re-run with new datajoint output
+    # r"\\allen\programs\mindscope\workgroups\dynamicrouting\PilotEphys\Task 2 pilot\DRpilot_626791_20220816", #re-run with new datajoint output
+    # r"\\allen\programs\mindscope\workgroups\dynamicrouting\PilotEphys\Task 2 pilot\DRpilot_626791_20220817", #re-run with new datajoint output
     
-    r"\\allen\programs\mindscope\workgroups\dynamicrouting\PilotEphys\Task 2 pilot\DRpilot_636766_20230123", 
-    r"\\allen\programs\mindscope\workgroups\dynamicrouting\PilotEphys\Task 2 pilot\DRpilot_636766_20230124", 
-    r"\\allen\programs\mindscope\workgroups\dynamicrouting\PilotEphys\Task 2 pilot\DRpilot_636766_20230125", 
-    r"\\allen\programs\mindscope\workgroups\dynamicrouting\PilotEphys\Task 2 pilot\DRpilot_636766_20230126", 
+    # r"\\allen\programs\mindscope\workgroups\dynamicrouting\PilotEphys\Task 2 pilot\DRpilot_636766_20230123", 
+    # r"\\allen\programs\mindscope\workgroups\dynamicrouting\PilotEphys\Task 2 pilot\DRpilot_636766_20230124", 
+    # r"\\allen\programs\mindscope\workgroups\dynamicrouting\PilotEphys\Task 2 pilot\DRpilot_636766_20230125", 
+    # r"\\allen\programs\mindscope\workgroups\dynamicrouting\PilotEphys\Task 2 pilot\DRpilot_636766_20230126", 
     
-    r"\\allen\programs\mindscope\workgroups\dynamicrouting\PilotEphys\Task 2 pilot\DRpilot_644864_20230130",
-    r"\\allen\programs\mindscope\workgroups\dynamicrouting\PilotEphys\Task 2 pilot\DRpilot_644864_20230131", 
-    r"\\allen\programs\mindscope\workgroups\dynamicrouting\PilotEphys\Task 2 pilot\DRpilot_644864_20230201", 
-    r"\\allen\programs\mindscope\workgroups\np-exp\PilotEphys\Task 2 pilot\DRpilot_644864_20230202",
+    # r"\\allen\programs\mindscope\workgroups\dynamicrouting\PilotEphys\Task 2 pilot\DRpilot_644864_20230130",
+    # r"\\allen\programs\mindscope\workgroups\dynamicrouting\PilotEphys\Task 2 pilot\DRpilot_644864_20230131", 
+    # r"\\allen\programs\mindscope\workgroups\dynamicrouting\PilotEphys\Task 2 pilot\DRpilot_644864_20230201", 
+    # r"\\allen\programs\mindscope\workgroups\np-exp\PilotEphys\Task 2 pilot\DRpilot_644864_20230202",
     
-    r"\\allen\programs\mindscope\workgroups\np-exp\PilotEphys\Task 2 pilot\DRpilot_644866_20230207", ##error when re-running
-    r"Y:\DRpilot_644866_20230208",
-    r"Y:\DRpilot_644866_20230209",
-    r"Y:\DRpilot_644866_20230210",
+    # r"\\allen\programs\mindscope\workgroups\np-exp\PilotEphys\Task 2 pilot\DRpilot_644866_20230207", ##error when re-running
+    # r"Y:\DRpilot_644866_20230208",
+    # r"Y:\DRpilot_644866_20230209",
+    # r"Y:\DRpilot_644866_20230210",
     
-    r"Y:\DRpilot_644867_20230220",
-    r"Y:\DRpilot_644867_20230221",
-    r"Y:\DRpilot_644867_20230222",
-    r"Y:\DRpilot_644867_20230223",
+    # r"Y:\DRpilot_644867_20230220",
+    # r"Y:\DRpilot_644867_20230221",
+    # r"Y:\DRpilot_644867_20230222",
+    # r"Y:\DRpilot_644867_20230223",
     
-    r"Y:\DRpilot_649943_20230213", 
-    r"Y:\DRpilot_649943_20230214",
-    r"Y:\DRpilot_649943_20230215",
-    r"Y:\DRpilot_649943_20230216",
+    # r"Y:\DRpilot_649943_20230213", 
+    # r"Y:\DRpilot_649943_20230214",
+    # r"Y:\DRpilot_649943_20230215",
+    # r"Y:\DRpilot_649943_20230216",
+    
+    
     
     ]
 
@@ -197,25 +211,31 @@ exp_nums = [
     # 1,2, #635891
     # 1,2, #636760
     
-    # #templeton pilot
+    # # #templeton pilot
     1,2, #620263
-    1, #620264
-    1, #628801
-    1,2, #636397
-    1,2, #644547
-    1,2, #646318
-    1,2, #649944
+    # 1, #620264
+    # 1, #628801
+    # 1,2, #636397
+    # 1,2, #644547
+    # 1,2, #646318
+    # 1,2, #649944
     
-    #DR pilot
-    1,2,3, #626791
-    1,2,3,4, #636766
-    1,2,3,4, #644864
-    1,2,3,4, #644866
-    1,2,3,4, #644867
-    1,2,3,4, #649943
+    #recent templeton pilot
+    1,2,3, #668759
+    1,2, #670181
+    1,2,3, #670180
+    1,2,3, #670248
+    
+    # #DR pilot
+    # 1,2,3, #626791
+    # 1,2,3,4, #636766
+    # 1,2,3,4, #644864
+    # 1,2,3,4, #644866
+    # 1,2,3,4, #644867
+    # 1,2,3,4, #649943
     ]
 
-for im,mm in enumerate(mainPaths[:]):
+for im,mm in enumerate(mainPaths[0:1]):
     mouseID=[x for x in mm.split('_') if len(x)==6 and x.isdigit()][0]
     rem_dashes=mm.replace('-','')
     rem_dashes=rem_dashes.replace('\\','_')

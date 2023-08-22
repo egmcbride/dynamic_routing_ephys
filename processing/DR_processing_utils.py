@@ -19,6 +19,40 @@ import probeSync
 import ecephys
 import glob
 
+import matplotlib.pyplot as plt
+
+# %%
+def hl_envelopes_idx(s, dmin=1, dmax=1, split=False):
+    """
+    Input :
+    s: 1d-array, data signal from which to extract high and low envelopes
+    dmin, dmax: int, optional, size of chunks, use this if the size of the input signal is too big
+    split: bool, optional, if True, split the signal in half along its mean, might help to generate the envelope in some cases
+    Output :
+    lmin,lmax : high/low envelope idx of input signal s
+    """
+
+    # locals min      
+    lmin = (np.diff(np.sign(np.diff(s))) > 0).nonzero()[0] + 1 
+    # locals max
+    lmax = (np.diff(np.sign(np.diff(s))) < 0).nonzero()[0] + 1 
+    
+    if split:
+        # s_mid is zero if s centered around x-axis or more generally mean of signal
+        s_mid = np.mean(s) 
+        # pre-sorting of locals min based on relative position with respect to s_mid 
+        lmin = lmin[s[lmin]<s_mid]
+        # pre-sorting of local max based on relative position with respect to s_mid 
+        lmax = lmax[s[lmax]>s_mid]
+
+    # global min of dmin-chunks of locals min 
+    lmin = lmin[[i+np.argmin(s[lmin[i:i+dmin]]) for i in range(0,len(lmin),dmin)]]
+    # global max of dmax-chunks of locals max 
+    lmax = lmax[[i+np.argmax(s[lmax[i:i+dmax]]) for i in range(0,len(lmax),dmax)]]
+    
+    return lmin,lmax
+
+
 # %%
 def load_behavior_data(behavPath):
     # behavior/stimuli
@@ -481,6 +515,8 @@ def sync_data_streams_sound_pilot(syncPath,ephysPath,nidaqPath):
 def align_trial_times(trials_df, syncData, syncPath, nidaqPath, trialSoundArray, 
                       trialSoundDur, soundSampleRate, deltaWheelPos, RF_first):
     
+    corr_method = 'envelope'
+    
     syncDataset = sync.Dataset(syncPath)
     
     nTrials = len(trials_df)
@@ -499,32 +535,45 @@ def align_trial_times(trials_df, syncData, syncPath, nidaqPath, trialSoundArray,
     
     # get stim running signal (not always present)
     stimRunningRising,stimRunningFalling = probeSync.get_sync_line_data(syncDataset,'stim_running')
+    
     if (len(stimRunningRising)>0)&(len(stimRunningFalling)>0):
         stimRunningFalling = stimRunningFalling[1:] if stimRunningFalling[0]<stimRunningRising[0] else stimRunningFalling
+    
+    #assume longest epoch is the behavior task
+    epoch_lengths = stimRunningFalling-stimRunningRising[:len(stimRunningFalling)]
+    if len(epoch_lengths)>1:
+        beh_epoch = np.argmax(epoch_lengths)
     
     if len(stimBreak)==0:
         stimBreak = len(vsyncFalling)-1
     else:
         stimBreak = stimBreak[0]
-        
-    if RF_first:
-        vsyncBehavior = vsyncTimes[(vsyncTimes>stimRunningRising[1])&
-                                   (vsyncTimes<=stimRunningFalling[1])]
-        if len(vsyncBehavior)<stimStartFrame.iloc[-1]:
-            vsyncBehavior = vsyncTimes[(vsyncTimes>stimRunningRising[2])&
-                                       (vsyncTimes<=stimRunningFalling[2])]    
+    
+    #temporary solution
+    if len(epoch_lengths)>1:
+        vsyncBehavior = vsyncTimes[(vsyncTimes>stimRunningRising[beh_epoch])&
+                                   (vsyncTimes<=stimRunningFalling[beh_epoch])]  
         photodiodeBehavior = photodiodeAll[(photodiodeAll>vsyncBehavior[0])]
         photodiodeBehavior = photodiodeBehavior[:len(vsyncBehavior)]
     else:
-        if len(stimRunningRising)>0:
-            vsyncBehavior = vsyncTimes[(vsyncTimes>stimRunningRising[0])&
-                                       (vsyncTimes<=stimRunningFalling[0])]
+        if RF_first:
+            vsyncBehavior = vsyncTimes[(vsyncTimes>stimRunningRising[1])&
+                                       (vsyncTimes<=stimRunningFalling[1])]
+            if len(vsyncBehavior)<stimStartFrame.iloc[-1]:
+                vsyncBehavior = vsyncTimes[(vsyncTimes>stimRunningRising[2])&
+                                           (vsyncTimes<=stimRunningFalling[2])]    
             photodiodeBehavior = photodiodeAll[(photodiodeAll>vsyncBehavior[0])]
+            photodiodeBehavior = photodiodeBehavior[:len(vsyncBehavior)]
         else:
-            photodiodeBehavior = photodiodeAll[:stimBreak]
-            vsyncBehavior = vsyncTimes[:stimBreak]
-            
-        photodiodeBehavior = photodiodeBehavior[:len(vsyncBehavior)]
+            if len(stimRunningRising)>0:
+                vsyncBehavior = vsyncTimes[(vsyncTimes>stimRunningRising[0])&
+                                           (vsyncTimes<=stimRunningFalling[0])]
+                photodiodeBehavior = photodiodeAll[(photodiodeAll>vsyncBehavior[0])]
+            else:
+                photodiodeBehavior = photodiodeAll[:stimBreak]
+                vsyncBehavior = vsyncTimes[:stimBreak]
+                
+            photodiodeBehavior = photodiodeBehavior[:len(vsyncBehavior)]
     
     # average white & black photodiode transitions and apply to the last 2 trials?
     frameDelayAvg = np.zeros((len(photodiodeBehavior)))
@@ -544,24 +593,68 @@ def align_trial_times(trials_df, syncData, syncPath, nidaqPath, trialSoundArray,
     
     stimLatency = np.zeros(nTrials)
     stimStartTime = np.zeros(nTrials)
-    preTime = 0.15
-    postTime = 0.15
+    preTime = 0.2
+    postTime = 0.2
     for trial,stim in enumerate(trialStim.astype('str')):
         startFrame = stimStartFrame[trial]
-        startTime = vsyncBehavior[startFrame] #+ syncData['nidaq']['shift']
+        startTime = vsyncBehavior[startFrame]
         if 'sound' in stim:
             soundStartTime = startTime + syncData['nidaq']['shift']
             stimDur = trialSoundDur[trial]
             startSample = int((soundStartTime - preTime) * syncData['nidaq']['sampleRate'])
             endSample = int((soundStartTime + stimDur + postTime) * syncData['nidaq']['sampleRate'])
+            #timepoints for daq signal
             t = np.arange(endSample-startSample) / syncData['nidaq']['sampleRate'] - preTime
+            
             sound = trialSoundArray[trial]
-            tInterp = np.arange(-preTime,preTime+stimDur+postTime,1/soundSampleRate)
+            #timepoints for sound array
+            tSound = np.arange(len(sound)) / soundSampleRate
+            #find envelope of the sound array
+            lmin_sound, lmax_sound = hl_envelopes_idx(sound)
+            #upsample envelope
+            soundMaxInterp = np.interp(tSound,tSound[lmax_sound],sound[lmax_sound])
+            soundMinInterp = np.interp(tSound,tSound[lmin_sound],sound[lmin_sound])
+            
+            #timepoints for upsampled mic signals
+            tInterp = np.arange(-preTime,stimDur+postTime,1/soundSampleRate)
+            if tInterp[-1]>t[-1]:
+                tInterp = tInterp[:np.where(tInterp>t[-1])[0][0]]
+            
             mic = microphoneData[startSample:endSample]
+            #upsample mic signal
             micInterp = np.interp(tInterp,t,mic)
-            c = np.correlate(micInterp,sound,'valid')
+            #find envelope of the mic signal
+            lmin_mic, lmax_mic = hl_envelopes_idx(micInterp)
+            #upsample envelope
+            micMaxInterp = np.interp(tInterp,tInterp[lmax_mic],micInterp[lmax_mic])
+            micMinInterp = np.interp(tInterp,tInterp[lmin_mic],micInterp[lmin_mic])
+            
+            fig,ax=plt.subplots(1,1)
+            ax.plot(tInterp,micInterp,alpha=0.5)
+            ax.plot(tInterp[lmin_mic],micInterp[lmin_mic])
+            ax.plot(tInterp[lmax_mic],micInterp[lmax_mic])
+            ax.set_title('trial'+str(trial)+' '+stim)
+            
+            # cross-correlation of the signals themselves
+            if corr_method == 'signal':
+                c = np.correlate(micInterp,sound,'valid')
+            
+            # cross-correlation of the maximum envelope
+            elif corr_method == 'envelope':
+                c = np.correlate(micMaxInterp,soundMaxInterp,'valid')
+            
             stimLatency[trial] = tInterp[np.argmax(c)]
             stimStartTime[trial] = tInterp[np.argmax(c)]+startTime
+            
+            fig,ax=plt.subplots(1,1)
+            ax.plot(tInterp,micInterp/np.max(micInterp),alpha=0.5)
+            ax.plot(tSound+stimLatency[trial],sound,alpha=0.5)
+            ax.axvline(stimLatency[trial],color='r')
+            ax.set_xlim([0.038,0.042])
+            ax.set_title('trial'+str(trial)+' '+stim)
+            print(stimLatency[trial])
+            print(np.max(c))
+            break
             
         elif 'vis' in stim:
             stimLatency[trial] = frameDelayAvg[trial] # approximately
