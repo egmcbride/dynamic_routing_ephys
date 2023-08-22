@@ -629,11 +629,11 @@ def align_trial_times(trials_df, syncData, syncPath, nidaqPath, trialSoundArray,
             micMaxInterp = np.interp(tInterp,tInterp[lmax_mic],micInterp[lmax_mic])
             micMinInterp = np.interp(tInterp,tInterp[lmin_mic],micInterp[lmin_mic])
             
-            fig,ax=plt.subplots(1,1)
-            ax.plot(tInterp,micInterp,alpha=0.5)
-            ax.plot(tInterp[lmin_mic],micInterp[lmin_mic])
-            ax.plot(tInterp[lmax_mic],micInterp[lmax_mic])
-            ax.set_title('trial'+str(trial)+' '+stim)
+            # fig,ax=plt.subplots(1,1)
+            # ax.plot(tInterp,micInterp,alpha=0.5)
+            # ax.plot(tInterp[lmin_mic],micInterp[lmin_mic])
+            # ax.plot(tInterp[lmax_mic],micInterp[lmax_mic])
+            # ax.set_title('trial'+str(trial)+' '+stim)
             
             # cross-correlation of the signals themselves
             if corr_method == 'signal':
@@ -646,15 +646,15 @@ def align_trial_times(trials_df, syncData, syncPath, nidaqPath, trialSoundArray,
             stimLatency[trial] = tInterp[np.argmax(c)]
             stimStartTime[trial] = tInterp[np.argmax(c)]+startTime
             
-            fig,ax=plt.subplots(1,1)
-            ax.plot(tInterp,micInterp/np.max(micInterp),alpha=0.5)
-            ax.plot(tSound+stimLatency[trial],sound,alpha=0.5)
-            ax.axvline(stimLatency[trial],color='r')
-            ax.set_xlim([0.038,0.042])
-            ax.set_title('trial'+str(trial)+' '+stim)
-            print(stimLatency[trial])
-            print(np.max(c))
-            break
+            # fig,ax=plt.subplots(1,1)
+            # ax.plot(tInterp,micInterp/np.max(micInterp),alpha=0.5)
+            # ax.plot(tSound+stimLatency[trial],sound,alpha=0.5)
+            # ax.axvline(stimLatency[trial],color='r')
+            # ax.set_xlim([0.038,0.042])
+            # ax.set_title('trial'+str(trial)+' '+stim)
+            # print(stimLatency[trial])
+            # print(np.max(c))
+            # break
             
         elif 'vis' in stim:
             stimLatency[trial] = frameDelayAvg[trial] # approximately
