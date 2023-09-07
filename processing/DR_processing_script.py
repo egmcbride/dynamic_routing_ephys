@@ -143,30 +143,30 @@ mainPaths = [
     # r"\\allen\programs\mindscope\workgroups\dynamicrouting\PilotEphys\opto pilot\2022-11-15_14-02-31_636760", #error w/ vsync/photodiode?
     
     # #templeton pilot
-    r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2022-07-26_14-09-36_620263",
-    r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2022-07-27_13-57-17_620263",
-    # r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2022-08-02_15-40-19_620264",
-    # r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2022-09-19_13-48-26_628801",
-    # r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2022-09-26_12-48-09_636397",
-    # r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2022-09-27_11-37-08_636397",
-    # r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2022-12-05_13-08-02_644547",
-    # r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2022-12-06_12-35-35_644547",
-    # r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2023-01-17_11-39-17_646318",
-    # r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2023-01-18_10-44-55_646318",
-    # r"Y:\2023-02-27_08-14-30_649944",
-    # r"Y:\2023-02-28_09-33-43_649944",
-    # recent pilot
-    r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2023-07-11_10-07-43_668759",
-    r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2023-07-12_10-50-07_668759",
-    r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2023-07-13_09-35-31_668759",
-    r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2023-07-18_10-05-51_670181",
-    r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2023-07-20_12-21-41_670181",
-    r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2023-07-25_09-47-29_670180",
-    r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2023-07-26_09-55-57_670180",
-    r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2023-07-27_09-36-37_670180",
-    r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2023-08-01_09-28-08_670248",
-    r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2023-08-02_09-58-44_670248",
-    r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2023-08-03_09-39-59_670248",
+    # r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2022-07-26_14-09-36_620263",
+    # r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2022-07-27_13-57-17_620263",
+    # # r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2022-08-02_15-40-19_620264",
+    # # r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2022-09-19_13-48-26_628801",
+    # # r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2022-09-26_12-48-09_636397",
+    # # r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2022-09-27_11-37-08_636397",
+    # # r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2022-12-05_13-08-02_644547",
+    # # r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2022-12-06_12-35-35_644547",
+    # # r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2023-01-17_11-39-17_646318",
+    # # r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2023-01-18_10-44-55_646318",
+    # # r"Y:\2023-02-27_08-14-30_649944",
+    # # r"Y:\2023-02-28_09-33-43_649944",
+    # # recent pilot
+    # r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2023-07-11_10-07-43_668759",
+    # r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2023-07-12_10-50-07_668759",
+    # r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2023-07-13_09-35-31_668759",
+    # r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2023-07-18_10-05-51_670181",
+    # r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2023-07-20_12-21-41_670181",
+    # # r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2023-07-25_09-47-29_670180", # recording crashed
+    # r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2023-07-26_09-55-57_670180",
+    # r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2023-07-27_09-36-37_670180",
+    # r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2023-08-01_09-28-08_670248", 
+    # # r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2023-08-02_09-58-44_670248", # corrupt behavior file
+    # r"\\allen\programs\mindscope\workgroups\templeton\TTOC\pilot recordings\2023-08-03_09-39-59_670248",
     
     # #DR pilot
     # r"\\allen\programs\mindscope\workgroups\dynamicrouting\PilotEphys\Task 2 pilot\DRpilot_626791_20220815", #re-run with new datajoint output
@@ -198,7 +198,24 @@ mainPaths = [
     # r"Y:\DRpilot_649943_20230215",
     # r"Y:\DRpilot_649943_20230216",
     
+    # #recent recordings
+    # r"\\allen\programs\mindscope\workgroups\dynamicrouting\PilotEphys\Task 2 pilot\DRpilot_660023_20230808",
+    # r"\\allen\programs\mindscope\workgroups\dynamicrouting\PilotEphys\Task 2 pilot\DRpilot_660023_20230809",
     
+    r"\\allen\programs\mindscope\workgroups\dynamicrouting\PilotEphys\Task 2 pilot\DRpilot_666986_20230814",
+    r"\\allen\programs\mindscope\workgroups\dynamicrouting\PilotEphys\Task 2 pilot\DRpilot_666986_20230815",
+    r"\\allen\programs\mindscope\workgroups\dynamicrouting\PilotEphys\Task 2 pilot\DRpilot_666986_20230816",
+    r"\\allen\programs\mindscope\workgroups\dynamicrouting\PilotEphys\Task 2 pilot\DRpilot_666986_20230817",
+    
+    r"\\allen\programs\mindscope\workgroups\dynamicrouting\PilotEphys\Task 2 pilot\DRpilot_662892_20230821",
+    r"\\allen\programs\mindscope\workgroups\dynamicrouting\PilotEphys\Task 2 pilot\DRpilot_662892_20230822",
+    r"\\allen\programs\mindscope\workgroups\dynamicrouting\PilotEphys\Task 2 pilot\DRpilot_662892_20230823",
+    r"\\allen\programs\mindscope\workgroups\dynamicrouting\PilotEphys\Task 2 pilot\DRpilot_662892_20230824",
+    
+    r"\\allen\programs\mindscope\workgroups\dynamicrouting\PilotEphys\Task 2 pilot\DRpilot_668755_20230828",
+    r"\\allen\programs\mindscope\workgroups\dynamicrouting\PilotEphys\Task 2 pilot\DRpilot_668755_20230829",
+    r"\\allen\programs\mindscope\workgroups\dynamicrouting\PilotEphys\Task 2 pilot\DRpilot_668755_20230830",
+    r"\\allen\programs\mindscope\workgroups\dynamicrouting\PilotEphys\Task 2 pilot\DRpilot_668755_20230831",
     
     ]
 
@@ -212,7 +229,7 @@ exp_nums = [
     # 1,2, #636760
     
     # # #templeton pilot
-    1,2, #620263
+    # 1,2, #620263
     # 1, #620264
     # 1, #628801
     # 1,2, #636397
@@ -221,10 +238,10 @@ exp_nums = [
     # 1,2, #649944
     
     #recent templeton pilot
-    1,2,3, #668759
-    1,2, #670181
-    1,2,3, #670180
-    1,2,3, #670248
+    # 1,2,3, #668759
+    # 1,2, #670181
+    # 2,3, #670180
+    # 1,3, #670248
     
     # #DR pilot
     # 1,2,3, #626791
@@ -233,9 +250,16 @@ exp_nums = [
     # 1,2,3,4, #644866
     # 1,2,3,4, #644867
     # 1,2,3,4, #649943
+    
+    #recent DR
+    # 1,2, #660023
+    1,2,3,4, #666986
+    1,2,3,4, #662892
+    1,2,3,4, #668755
+    
     ]
 
-for im,mm in enumerate(mainPaths[0:1]):
+for im,mm in enumerate(mainPaths[8:]):
     mouseID=[x for x in mm.split('_') if len(x)==6 and x.isdigit()][0]
     rem_dashes=mm.replace('-','')
     rem_dashes=rem_dashes.replace('\\','_')
