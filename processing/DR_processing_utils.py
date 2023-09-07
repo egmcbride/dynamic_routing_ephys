@@ -290,14 +290,21 @@ def load_behavior_data(behavPath):
     trials_df=pd.DataFrame.from_dict(trials_dict)
     
     if opto_vars:
-        trials_df['trialGalvoVoltage_x']=trialGalvoVoltage[:,0]
-        trials_df['trialGalvoVoltage_y']=trialGalvoVoltage[:,1]
-        trials_df['trialOptoDur']=trialOptoDur
-        trials_df['trialOptoOnsetFrame']=trialOptoOnsetFrame
-        trials_df['trialOptoVoltage']=trialOptoVoltage
-        
-        if 'trialOptoRegion' in locals():
-            trials_df['trialOptoRegion']=trialOptoRegion
+        if len(trialOptoVoltage)>0:
+            trialGalvoVoltageSize = [len(x) for x in trialGalvoVoltage]
+            
+            if len(np.unique(trialGalvoVoltageSize))>1:
+                trials_df['trialGalvoVoltage']=trialGalvoVoltage
+            else:
+                trials_df['trialGalvoVoltage_x']=np.vstack(trialGalvoVoltage)[:,0]
+                trials_df['trialGalvoVoltage_y']=np.vstack(trialGalvoVoltage)[:,1]
+            
+            trials_df['trialOptoDur']=trialOptoDur
+            trials_df['trialOptoOnsetFrame']=trialOptoOnsetFrame
+            trials_df['trialOptoVoltage']=trialOptoVoltage
+            
+            if 'trialOptoRegion' in locals():
+                trials_df['trialOptoRegion']=trialOptoRegion
 
     return trials_df, trialSoundArray, trialSoundDur, soundSampleRate, deltaWheelPos, startTime
 
@@ -592,13 +599,18 @@ def align_trial_times(trials_df, syncData, syncPath, nidaqPath, trialSoundArray,
     microphoneData = nidaqData[microphoneCh]
     
     stimLatency = np.zeros(nTrials)
+    stimLatencySig = np.zeros(nTrials)
+    stimLatencyEnv = np.zeros(nTrials)
     stimStartTime = np.zeros(nTrials)
-    preTime = 0.2
-    postTime = 0.2
+    stimStartTimeSig = np.zeros(nTrials)
+    stimStartTimeEnv = np.zeros(nTrials)
+    preTime = 0.15
+    postTime = 0.15
     for trial,stim in enumerate(trialStim.astype('str')):
         startFrame = stimStartFrame[trial]
         startTime = vsyncBehavior[startFrame]
         if 'sound' in stim:
+            # break
             soundStartTime = startTime + syncData['nidaq']['shift']
             stimDur = trialSoundDur[trial]
             startSample = int((soundStartTime - preTime) * syncData['nidaq']['sampleRate'])
@@ -636,15 +648,26 @@ def align_trial_times(trials_df, syncData, syncPath, nidaqPath, trialSoundArray,
             # ax.set_title('trial'+str(trial)+' '+stim)
             
             # cross-correlation of the signals themselves
-            if corr_method == 'signal':
-                c = np.correlate(micInterp,sound,'valid')
+            # if corr_method == 'signal':
+            c_sig = np.correlate(micInterp,sound,'valid')
             
             # cross-correlation of the maximum envelope
-            elif corr_method == 'envelope':
-                c = np.correlate(micMaxInterp,soundMaxInterp,'valid')
+            # elif corr_method == 'envelope':
+            c_env = np.correlate(micMaxInterp,soundMaxInterp,'valid')
             
+            if corr_method == 'signal':
+                    c=c_sig
+            elif corr_method == 'envelope':
+                    c=c_env
+                    
             stimLatency[trial] = tInterp[np.argmax(c)]
             stimStartTime[trial] = tInterp[np.argmax(c)]+startTime
+            
+            stimLatencySig[trial] = tInterp[np.argmax(c_sig)]
+            stimStartTimeSig[trial] = tInterp[np.argmax(c_sig)]+startTime
+            
+            stimLatencyEnv[trial] = tInterp[np.argmax(c_env)]
+            stimStartTimeEnv[trial] = tInterp[np.argmax(c_env)]+startTime
             
             # fig,ax=plt.subplots(1,1)
             # ax.plot(tInterp,micInterp/np.max(micInterp),alpha=0.5)
@@ -670,6 +693,12 @@ def align_trial_times(trials_df, syncData, syncPath, nidaqPath, trialSoundArray,
     trials_df['stimStartTime'] = stimStartTime
     trials_df['stimLatency'] = stimLatency
     
+    trials_df['stimStartTimeSig'] = stimStartTimeSig
+    trials_df['stimLatencySig'] = stimLatencySig
+    
+    trials_df['stimStartTimeEnv'] = stimStartTimeEnv
+    trials_df['stimLatencyEnv'] = stimLatencyEnv
+    
     for col in trials_df.columns:
         if 'Unnamed:' in col:
             trials_df = trials_df.drop([col],axis='columns')
@@ -693,6 +722,8 @@ def align_trial_times(trials_df, syncData, syncPath, nidaqPath, trialSoundArray,
 # %%
 def align_rf_trial_times(rf_df, syncData, syncPath, nidaqPath, rf_trialSoundArray, 
                          rf_soundDur, soundSampleRate, rf_deltaWheelPos, RF_first):
+    
+    corr_method = 'envelope'
     
     syncDataset = sync.Dataset(syncPath)
     
@@ -755,25 +786,97 @@ def align_rf_trial_times(rf_df, syncData, syncPath, nidaqPath, rf_trialSoundArra
     microphoneData = nidaqData[microphoneCh]
     
     stimLatency = np.zeros(nTrials)
+    stimLatencySig = np.zeros(nTrials)
+    stimLatencyEnv = np.zeros(nTrials)
     stimStartTime = np.zeros(nTrials)
+    stimStartTimeSig = np.zeros(nTrials)
+    stimStartTimeEnv = np.zeros(nTrials)
     preTime = 0.15
     postTime = 0.15
     for trial,stim in enumerate(trialStim.astype('str')):
         startFrame = stimStartFrame[trial]
-        startTime = vsyncRF[startFrame] #+ syncData['nidaq']['shift']
+        startTime = vsyncRF[startFrame] 
         if 'sound' in stim:
+            # soundStartTime = startTime + syncData['nidaq']['shift']
+            # stimDur = rf_soundDur
+            # startSample = int((soundStartTime - preTime) * syncData['nidaq']['sampleRate'])
+            # endSample = int((soundStartTime + stimDur + postTime) * syncData['nidaq']['sampleRate'])
+            # t = np.arange(endSample-startSample) / syncData['nidaq']['sampleRate'] - preTime
+            # sound = rf_trialSoundArray[trial]
+            # tInterp = np.arange(-preTime,preTime+stimDur+postTime,1/soundSampleRate)
+            # mic = microphoneData[startSample:endSample]
+            # micInterp = np.interp(tInterp,t,mic)
+            # c = np.correlate(micInterp,sound,'valid')
+            # stimLatency[trial] = tInterp[np.argmax(c)]
+            # stimStartTime[trial] = tInterp[np.argmax(c)]+startTime
+            
             soundStartTime = startTime + syncData['nidaq']['shift']
             stimDur = rf_soundDur
             startSample = int((soundStartTime - preTime) * syncData['nidaq']['sampleRate'])
             endSample = int((soundStartTime + stimDur + postTime) * syncData['nidaq']['sampleRate'])
+            #timepoints for daq signal
             t = np.arange(endSample-startSample) / syncData['nidaq']['sampleRate'] - preTime
+            
             sound = rf_trialSoundArray[trial]
-            tInterp = np.arange(-preTime,preTime+stimDur+postTime,1/soundSampleRate)
+            #timepoints for sound array
+            tSound = np.arange(len(sound)) / soundSampleRate
+            #find envelope of the sound array
+            lmin_sound, lmax_sound = hl_envelopes_idx(sound)
+            #upsample envelope
+            soundMaxInterp = np.interp(tSound,tSound[lmax_sound],sound[lmax_sound])
+            soundMinInterp = np.interp(tSound,tSound[lmin_sound],sound[lmin_sound])
+            
+            #timepoints for upsampled mic signals
+            tInterp = np.arange(-preTime,stimDur+postTime,1/soundSampleRate)
+            if tInterp[-1]>t[-1]:
+                tInterp = tInterp[:np.where(tInterp>t[-1])[0][0]]
+            
             mic = microphoneData[startSample:endSample]
+            #upsample mic signal
             micInterp = np.interp(tInterp,t,mic)
-            c = np.correlate(micInterp,sound,'valid')
+            #find envelope of the mic signal
+            lmin_mic, lmax_mic = hl_envelopes_idx(micInterp)
+            #upsample envelope
+            micMaxInterp = np.interp(tInterp,tInterp[lmax_mic],micInterp[lmax_mic])
+            micMinInterp = np.interp(tInterp,tInterp[lmin_mic],micInterp[lmin_mic])
+            
+            # fig,ax=plt.subplots(1,1)
+            # ax.plot(tInterp,micInterp,alpha=0.5)
+            # ax.plot(tInterp[lmin_mic],micInterp[lmin_mic])
+            # ax.plot(tInterp[lmax_mic],micInterp[lmax_mic])
+            # ax.set_title('trial'+str(trial)+' '+stim)
+            
+            # cross-correlation of the signals themselves
+            # if corr_method == 'signal':
+            c_sig = np.correlate(micInterp,sound,'valid')
+            
+            # cross-correlation of the maximum envelope
+            # elif corr_method == 'envelope':
+            c_env = np.correlate(micMaxInterp,soundMaxInterp,'valid')
+            
+            if corr_method == 'signal':
+                    c=c_sig
+            elif corr_method == 'envelope':
+                    c=c_env
+                    
             stimLatency[trial] = tInterp[np.argmax(c)]
             stimStartTime[trial] = tInterp[np.argmax(c)]+startTime
+            
+            stimLatencySig[trial] = tInterp[np.argmax(c_sig)]
+            stimStartTimeSig[trial] = tInterp[np.argmax(c_sig)]+startTime
+            
+            stimLatencyEnv[trial] = tInterp[np.argmax(c_env)]
+            stimStartTimeEnv[trial] = tInterp[np.argmax(c_env)]+startTime
+            
+            # fig,ax=plt.subplots(1,1)
+            # ax.plot(tInterp,micInterp/np.max(micInterp),alpha=0.5)
+            # ax.plot(tSound+stimLatency[trial],sound,alpha=0.5)
+            # ax.axvline(stimLatency[trial],color='r')
+            # ax.set_xlim([0.038,0.042])
+            # ax.set_title('trial'+str(trial)+' '+stim)
+            # print(stimLatency[trial])
+            # print(np.max(c))
+            # break
     
         elif 'vis' in stim:
             stimLatency[trial] = RFframeDelayAvg[trial] # approximately
@@ -788,6 +891,12 @@ def align_rf_trial_times(rf_df, syncData, syncPath, nidaqPath, rf_trialSoundArra
     
     rf_df['stimStartTime'] = stimStartTime
     rf_df['stimLatency'] = stimLatency
+    
+    rf_df['stimStartTimeSig'] = stimStartTimeSig
+    rf_df['stimLatencySig'] = stimLatencySig
+    
+    rf_df['stimStartTimeEnv'] = stimStartTimeEnv
+    rf_df['stimLatencyEnv'] = stimLatencyEnv
     
     if len(rf_deltaWheelPos)>0:
         RFframes = {
